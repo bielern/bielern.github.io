@@ -1,0 +1,336 @@
+---
+layout: post
+title:  "Introduction into Scala"
+date:   2016-05-05 12:17:24 +0200
+categories: jekyll update
+---
+
+Welcome to my first post about Scala! 
+In the following, I will publish a couple Scala-related posts that will 
+present some of my findings related to all my findings in Scala.
+But let's jump right in!
+
+## What is Scala?
+
+Scala is a functional "dialect" of Java.  All Java libraries can be used in
+Scala and vice versa.  Scala code is transpiled to Java and it can be run
+on the JVM.  It was originally developed in 2001 by Martin
+Odersky at the Ecole polytechienne federal in Lausanne (EPFL)
+and has since then grown in popularity.  The original intention was to bring
+more concepts of functional programming to Java and make working with them fun
+and easy.
+
+Why are these concepts of functional programming useful in the beginning?
+First and foremost, they make the code less buggy and more understandable since
+the main focus lies in outlining the data structures and the algorithms while
+removing a lot of boiler place code. Some of the most useful features of
+functional programming include the following three points:
+
+  - immutability,
+  - higher order functions and
+  - a type system.
+
+Another often heard feature is lazy evaluation, 
+although I personally try to avoid it as much as possible 
+due to performance issues and indeterminism 
+ -- you never know when a variable will be evaluated.
+These three points mentioned above have each their fair share of [benefits][fppatterns] 
+that make functional programming such a bliss.
+
+[fppatterns]: http://pt.slideshare.net/ScottWlaschin/fp-patterns-buildstufflt
+
+### Immutability
+
+Immutability means that the value of each variable can only be set once.
+This makes a lot of sense, when one remembers good ol' mathematics 
+where in a prove `x = 1` actually means that `x` has now the value of `1` 
+and that the value of `x` cannot be changed anywhere else afterwards.
+Basically, `x` is now a constant function without any parameter 
+that will always return `1`.
+Having this kind of immutability in your program has various advantages.  For
+starters, you can better reason about your program.  You don't have to keep a
+register of all variables in your mind and think about where and how they could
+be changed in the course of the program.  And since variable cannot be changed,
+they tend to have a very limited scope.  Further on, immutability helps to
+parallelize programs since all variables are basically read only and threads
+cannot write into the same variable at the same time (no race conditions).
+
+### Higher Order Functions
+
+While immutability has some really nice advantages, 
+it is only with higher order functions where things get exciting.
+Higher order functions are nothing else then functions 
+that either accept or return other functions.
+This makes writing programs really concise 
+since much boiler plate code can be factored out.
+Take for example the following Java code 
+that creates a new list from an existing one.
+
+{% highlight java %}
+    List<int> result = new List<int>(input.size());
+    for (int i = 0; i <= input.size(); i++) {
+        result.push(input.get(i) + 1);
+    }
+{% endhighlight %}
+
+In a first glance this kind of code looks trivial and you can see it
+everywhere.  And maybe you are already trained enough to have noticed the
+mistake: `i <= input.size()` instead of `i < input.size()`.  
+And this is exactly where higher functions can help: 
+all you want to do is transform the `input` list by adding one to its
+elements: `input.get(i) + 1`.  Here is the corresponding Scala code
+
+{% highlight scala %}
+    val result = input.map(_ + 1)
+{% endhighlight %}
+
+Even if you are not familiar with the syntax yet
+you can at least guess what this one-liner does:
+adding `1` to each element in `input`.
+And there is no chance for an error to slip in 
+because all the boiler code has vanished inside the `map` function.
+This is for me the reason why I really like functional programming:
+the code becomes a simple expression of the algorithm 
+instead of a pile of book keeping variables and control structures.
+
+### Type system
+
+Another important part of each functional programming language is the type
+system.  As a basic layer, a static type system ensures that your program makes
+sense at compile time when all the different functions are put together
+(compiled).  With a static type system one can also use sane types to document
+your code (for example by using a `Length` type instead of a simple `Double`).
+These advantages are not unique to functional programming languages but are
+valid for all statically typed languages.  What is nice in functional programming
+languages are all the goodies that often come with the type system.
+
+ - *Pattern Matching* allows for easy handling of type hierarchies and is
+   basically `switch` on steroids.
+ - *Type Inference* renders redundant statements of the type unnecessary since
+   the compiler is smart enough to infer the correct type.
+ - *Monads and Category Theory* help in the design of a standard library that
+   provides abstract data structures (for example collections like lists and
+   sets) with a consistent behaviour (monadic laws).
+
+
+## Show me some Scala!
+
+By now you might be enough excited to finally see some real-world Scala.
+So let's jump right in.
+First of all you need to install scala either by downloading it [here][scala]
+or by using a package manager like brew:
+
+    brew install scala
+
+[scala]: http://www.scala-lang.org/
+
+Next, fire up the Scala console in a terminal. 
+You should see something like this (the version will probably differ).
+
+    $ scala
+    Welcome to Scala version 2.10.4 (Java HotSpot(TM) 64-Bit Server VM, Java 1.8.0_31).
+    Type in expressions to have them evaluated.
+    Type :help for more information.
+    
+    scala>
+
+### Values
+
+Lets first define a mutable variable (`var`) and a immutable value (`val`).
+
+{% highlight scala %}
+    scala> var a = 1
+    a: Int = 1
+    
+    scala> val b = 1
+    b: Int = 1
+{% endhighlight %}
+
+If you try to reassign a new value to the variables, 
+you will see that it will work for `a` but **not** for the immutable value `b`.
+    
+{% highlight scala %}
+    scala> a = a + 1
+    a: Int = 2
+    
+    scala> b = b + 1
+    <console>:8: error: reassignment to val
+           b = b + 1
+             ^
+{% endhighlight %}
+
+By the way: you already see type inference at work.
+There was no need to explicitly state the type of you variables.
+The Scala interpreter was able to deduce that `a` and `b` are both `Integers`.
+However, you could explicitly state the type if you wish like this `val b: Int = 1`.
+
+### Functions
+
+Next, let's define a function in the console.
+
+{% highlight scala %}
+    scala> def plus(a: Int, b: Int) = a + b
+    plus: (a: Int, b: Int)Int
+    
+    scala> plus(3, 4)
+    res0: Int = 7
+{% endhighlight %}
+
+A quite consice definition!
+The `def` keywords marks the start of a function definition.
+Then, comes the name of the function and a parameter list in parantheses.
+Here, you do have to specify the type, 
+since the scala interpreter has otherwise no hints about their types.
+The return type (`Int`), however, 
+can again be deduced from the types of all the other variables.
+The actual body of the function follows after an equal sign.
+If the body contains more than one line, 
+it must be enclosed in curly brackets (`{ ... }`).
+
+### Classes
+
+At last, let's have a look at defining classes.
+For that, it makes sense to use the paste mode.
+
+{% highlight scala %}
+    scala> :paste
+    // Entering paste mode (ctrl-D to finish)
+    
+    class HelloWorld(val name: String) {
+      val greeting = s"Hello $name!"
+    
+      def greet() = {
+        println(greeting)
+      }
+    }
+    
+    // Exiting paste mode, now interpreting.
+    
+    defined class HelloWorld
+{% endhighlight %}
+
+There are several interesting things going on.
+Each class has a list of input parameters, 
+which defines the default constructor. 
+This constructor is actually defined by the body of the class!
+For example, see how the "field" `greeting` (to speak in object-oriented [OO] terms)
+is defined based on the "field" `name` using some fancy string interpolation. 
+
+The value of `greeting` can then be used 
+in the definition the function (or method in OO terms) `greet`.
+
+To create an instance of `HelloWorld`, use the `new` keyword just as you would in Java.
+    
+{% highlight scala %}
+    scala> val john = new HelloWorld("John")
+    john: HelloWorld = HelloWorld@1b919693
+    
+    scala> john.greet()
+    Hello John!
+{% endhighlight %}
+
+
+### Collections
+
+The collections in Scala are heavily inspired by the functors and monads of
+category theory.  Introducing these concepts here in full lenght would be too
+lengthy but you might at least get an intuitive feeling what they are about
+with the examples in this section.
+
+Let's define a list (or *sequence*)
+
+{% highlight scala %}
+    scala> val s = Seq(1,2,3)
+    s: Seq[Int] = List(1, 2, 3)
+{% endhighlight %}
+
+To access elements, use `head`, `last` or the random access method
+
+{% highlight scala %}
+    scala> s.head
+    res0: Int = 1
+    
+    scala> s.last
+    res1: Int = 3
+    
+    scala> s(1)
+    res2: Int = 2
+{% endhighlight %}
+
+Since values are immutable, one cannot push to the list but creates a new one.
+
+{% highlight scala %}
+    scala> val t = s :+ 4
+    t: Seq[Int] = List(1, 2, 3, 4)
+{% endhighlight %}
+
+In order to transform a list (or any collection type),
+one does not explcitly loop over the elemetns but applies
+a transformation using higher order functions like 
+`map`, `filter`, `fold` or `flatMap`.
+
+To calculate for example the squared numbers in `s`, we can use `map` like this:
+
+{% highlight scala %}
+    scala> s.map(a => a * a)
+    res5: Seq[Int] = List(1, 4, 9)
+{% endhighlight %}
+
+That argument to `map` is actually a *lambda*, an anonymous function.
+It takes the parameter `a` and returns `a` multiplied by itself.
+Lambdas are a powerful concept and if you don't know it yet, learn it!
+They exist by now in [Python][python-lambda], [Java 8][java-lambda], [C++][c++-lambda] and others.
+
+[python-lambda]: https://docs.python.org/3/howto/functional.html#small-functions-and-the-lambda-expression
+[java-lambda]: https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html
+[c++-lambda]: http://en.cppreference.com/w/cpp/language/lambda
+
+Use filter if you only need some elements -- for example odd ones.
+
+{% highlight scala %}
+    scala> s.filter(_ % 2 == 1)
+    res7: Seq[Int] = List(1, 3)
+{% endhighlight %}
+
+Don't panic about the argument to the `filter` function: 
+this is just a short version of the lambda `a => a % 2 == 1`.
+
+If you want to extract one single value by looping over all elements,
+`fold` might be what you are looking for.
+For instance, if you want to calculate the sum of all elements, use
+
+{% highlight scala %}
+    scala> s.fold(0)(_+_)
+    res8: Int = 6
+{% endhighlight %}
+
+Before you panic: `fold` takes two arguments (in two different parameter lists).
+The first argument is the zero element of an accumulator, 
+the second one is the function used to combine the accumulator with the elements in the list.
+For this function we used the short form for a lambda with two arguments `(a, b) => a + b`.
+Basically, `s.fold(0)(_+_)` is the same as `(((0 + 1) + 2) + 3)`.
+
+The last important function to know is `flatMap`. 
+Its type for sequences is -- more or less -- `(A => Seq[B]) => Seq[B]`
+and it can be considered as a `map` followed by `flatten`.
+So it takes a function that in turn takes something of type `A` and returns a list of `B`s;
+but instead of returning a list of list of type `B` it returns a list of `B`s.
+The following example illustrates the difference.
+
+{% highlight scala %}
+    scala> s.map(n => Seq.fill(n)(n))
+    res9: Seq[Seq[Int]] = List(List(1), List(2, 2), List(3, 3, 3))
+    
+    scala> s.flatMap(n => Seq.fill(n)(n))
+    res10: Seq[Int] = List(1, 2, 2, 3, 3, 3)
+    
+    scala> s.map(n => Seq.fill(n)(n)).flatten
+    res11: Seq[Int] = List(1, 2, 2, 3, 3, 3)
+{% endhighlight %}
+
+## Outlook
+
+This post was only a quick glimps on Scala.
+In the future I will publish more posts about Scala, 
+functional programming or other topics like modelling.
+If you have any suggestions or critiques, I welcome any feedback!
